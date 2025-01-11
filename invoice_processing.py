@@ -15,7 +15,7 @@ def df_processor (df):
 
     df['on_gnd'] = df['stop'] - df['start']
     df['on_gnd'] = df['on_gnd'].apply(lambda x: x.days)
-    #df.set_index("tail", inplace=True)
+
     return df
 
 def df_processor_deux (df):
@@ -30,5 +30,5 @@ def df_processor_deux (df):
 
     df['on_gnd'] = df['stop'] - df['start']
     df['on_gnd'] = df['on_gnd'].apply(lambda x: x.days)
-    #df.set_index("tail", inplace=True)
+
     return df

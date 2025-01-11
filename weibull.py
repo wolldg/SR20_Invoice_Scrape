@@ -16,15 +16,23 @@ nav_light = df_processor(nav_light)
 relay_matrix = relay_reader()
 relay = pd.DataFrame(columns= columns, data= relay_matrix)
 relay = df_processor(relay)
+
 ############################################################################################
+# Relay
 relay_downtime_by_tail = relay.groupby('tail')['on_gnd'].apply(list).reset_index()
 relay_total_cost_by_tail = relay.groupby('tail')['cost'].apply(sum).reset_index()
 relay_charges= relay.groupby('tail')['cost'].apply(list).reset_index()
+
 ###########################################################################################
+# Nav Light
 nav_light_downtime_by_tail = nav_light.groupby("tail")['on_gnd'].apply(list).reset_index()
 nav_light_total_cost_by_tail = nav_light.groupby("tail")['cost'].apply(sum).reset_index()
 nav_light_charges = nav_light.groupby("tail")['cost'].apply(list).reset_index()
+
 ###########################################################################################
+
+# Uncomment for descriptive statistics
+
 #print(relay_downtime_by_tail, '\n')
 #print(relay_cost_by_tail, '\n')
 
@@ -47,6 +55,8 @@ def weibull_analysis(datasets, labels=None):
     def failure_rate(t, shape, scale):
         return (shape / scale) * (t / scale) ** (shape - 1)
 
+    colors = ("blue", "orange", "green")
+
     plt.figure(figsize=(10, 6))
     for i, data in enumerate(datasets):
         # Fit the data to a Weibull distribution using SciPy
@@ -54,7 +64,17 @@ def weibull_analysis(datasets, labels=None):
         shape_fitted, loc_fitted, scale_fitted = params
 
         # Generate a Weibull probability plot for each dataset
-        stats.probplot(data, dist="weibull_min", sparams=(shape_fitted, loc_fitted, scale_fitted), plot=plt)
+        probplot = stats.probplot(data, dist="weibull_min", sparams=(shape_fitted, loc_fitted, scale_fitted))
+
+        # Extract the theoretical quantiles and ordered values
+        theoretical_quantiles, ordered_values = probplot[0]
+
+        # Plot the data with the assigned color
+        plt.scatter(theoretical_quantiles, ordered_values, color=colors[i % len(colors)], label=f'Dataset {i + 1}')
+
+        # Plot the fitted line
+        slope, intercept = probplot[1][0], probplot[1][1]
+        plt.plot(theoretical_quantiles, slope * theoretical_quantiles + intercept, color=colors[i % len(colors)])
 
     plt.title('Weibull Probability Plot')
     plt.grid(True)
@@ -105,6 +125,6 @@ def weibull_analysis(datasets, labels=None):
     plt.show()
 
 
-weibull_analysis(nav_light_down_data, labels=["N173WM", "N191JG", "N191SA"])
+#weibull_analysis(nav_light_down_data, labels=["N173WM", "N191JG", "N191SA"])
 
-#weibull_analysis(relay_down_data, labels=["N173WM", "N191JG", "N191SA"])
+weibull_analysis(relay_down_data, labels=["N173WM", "N191JG", "N191SA"])
